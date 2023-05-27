@@ -2,33 +2,45 @@
 #include <vector>
 #include <forward_list>
 #include <stdio.h>
+#include "stdio.h"
+#include <stdlib.h>
+#include <string>
+#include <ctype.h>
+#include <math.h>
+#include <locale.h>
+#include <windows.h>
+#include <conio.h>
+#include <time.h>
+#include <iostream>
+#include "errors.h"
 using namespace std;
 
-struct  Vertex
-{
-    int id_v;
-    vector<Edge> edges;
-    double mark;
-    int id_prev;
 
-    Vertex(int id_v)
-    {
-        this->id_v = id_v;
-    }
-};
-
-struct Edge
-{
-    Edge* next;
-    int id_to;
-    double weight;
-    Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
-};
 
 class Graph
 {
 private:
-    
+    struct Edge
+    {
+        Edge* next;
+        int id_to;
+        double weight;
+        Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
+    };
+
+    struct  Vertex
+    {
+        int id_v;
+        vector<Edge> edges;
+        double mark;
+        int id_prev;
+
+        Vertex(int id_v)
+        {
+            this->id_v = id_v;
+        }
+    };
+
     enum Color
     {
         white = 0,

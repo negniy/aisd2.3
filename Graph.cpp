@@ -3,6 +3,20 @@
 #include <iostream>
 #include <queue>
 #include <algorithm>
+#include <vector>
+#include <forward_list>
+#include <stdio.h>
+#include "stdio.h"
+#include <stdlib.h>
+#include <string>
+#include <ctype.h>
+#include <math.h>
+#include <locale.h>
+#include <windows.h>
+#include <conio.h>
+#include <time.h>
+#include <iostream>
+#include "errors.h"
 #include "Graph.h"
 using namespace std;
 
@@ -44,7 +58,7 @@ int Graph::find_vertex(int id_v) const
 
 void Graph::add_vertex(int id_v)
 {
-	if (has_vertex(id_v)) throw "Вершина уже существует";
+	if (has_vertex(id_v)) throw error("Уже существует такая вершина");
 	Vertex v(id_v);
 	vertexes.push_back(v);
 }
@@ -54,7 +68,7 @@ bool Graph::has_edge(int id_from, int id_to) const
 	if (vertexes.size() == 0) return false;
 	int index_from = find_vertex(id_from);
 	int index_to = find_vertex(id_to);
-	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
+	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
 	for (auto i = vertexes[index_from].edges.begin(); i != vertexes[index_from].edges.end(); i++)
 	{
@@ -69,7 +83,7 @@ bool Graph::remove_edge(int id_from, int id_to)
 	if (vertexes.size() == 0) return false;
 	int index_from = find_vertex(id_from);
 	int index_to = find_vertex(id_to);
-	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
+	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
 	for (auto i = vertexes[id_from].edges.begin(); i != vertexes[id_from].edges.end(); i++) {
 		if (i->id_to == id_to) vertexes[id_from].edges.erase(i);
@@ -82,7 +96,7 @@ bool Graph::remove_vertex(int remove_v)
 {
 	if (vertexes.size() == 0) return false;
 	int remove_index = find_vertex(remove_v);
-	if (remove_index == -1) throw "Такой вершины нет";
+	if (remove_index == -1) throw error("Такой вершины нет");
 
 	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 	{
@@ -98,13 +112,14 @@ void Graph::add_edge(int id_from, int id_to, int weight)
 {
 	int index_from = find_vertex(id_from);
 	int index_to = find_vertex(id_to);
-	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра нет";
+	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра нет");
 	Edge tmp(id_to, weight);
 	vertexes[index_from].edges.push_back(tmp);
 }
 
 void Graph::print() const
 {
+	if (vertexes.size() == 0) throw error("Пустой граф");
 	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
 	{
 		cout << i->id_v << ": ";
@@ -123,7 +138,7 @@ int Graph::order() const
 
 int Graph::degree() const
 {
-	if (vertexes.size() == 0) throw "Граф пуст";
+	if (vertexes.size() == 0) throw error("Граф пуст");
 	int deg = -1;
 	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
 	{
@@ -152,14 +167,14 @@ vector<Edge> Graph::shortest_path(int id_from, int id_to)
 	{
 		for (auto j = i->edges.begin(); j != i->edges.end(); j++)
 		{
-			if (j->weight < 0) throw "Алгоритм Дейкстры не может корректно работать с отрицательными весами";
+			if (j->weight < 0) throw error("Алгоритм Дейкстры не может корректно работать с отрицательными весами");
 		}
 	}
 
-	if (vertexes.size() == 0) throw "Пустой граф";
+	if (vertexes.size() == 0) throw error("Пустой граф");
 	int index_from = find_vertex(id_from);
 	int index_to = find_vertex(id_to);
-	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
+	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
 	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 	{
@@ -170,7 +185,7 @@ vector<Edge> Graph::shortest_path(int id_from, int id_to)
 	vertexes[find_vertex(id_from)].id_prev = 0;
 
 	vector<Vertex> S; // множество обработанных вершин
-	priority_queue <Vertex, vector<Vertex>, greater<int> > Q; // приоритетная очередь обработки
+	queue <Vertex> Q; // приоритетная очередь обработки
 
 	while (!Q.empty())
 	{
@@ -179,11 +194,14 @@ vector<Edge> Graph::shortest_path(int id_from, int id_to)
 		Vertex u = Q.front();
 		Q.pop();
 		S.push_back(u);
-		vector<Vertex> v_neighbour = neighbour_of_vertex(u.id_v);
+		vector<Vertex> v_neighbour;// = neighbour_of_vertex(u.id_v);
+		for (auto i = u.edges.begin(); i != u.edges.end(); i++) {
+			i->
+		}
+
 		for (auto v = v_neighbour.begin(); v != v_neighbour.end(); v++)
 		{
-			int i = find_vertex(v->id_v);
-			relax(u, vertexes[i]);
+			relax(u, *v);
 		}
 		Q = update_queue(Q);
 	}
