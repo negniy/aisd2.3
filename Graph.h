@@ -4,18 +4,31 @@
 #include <stdio.h>
 using namespace std;
 
+struct  Vertex
+{
+    int id_v;
+    vector<Edge> edges;
+    double mark;
+    int id_prev;
+
+    Vertex(int id_v)
+    {
+        this->id_v = id_v;
+    }
+};
+
+struct Edge
+{
+    Edge* next;
+    int id_to;
+    double weight;
+    Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
+};
 
 class Graph
 {
 private:
-    struct Edge
-    {
-        Edge* next;
-        int id_to;
-        double weight;
-        Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
-    };
-
+    
     enum Color
     {
         white = 0,
@@ -23,19 +36,8 @@ private:
         black = 2
     };
 
-    struct  Vertex
-    {
-        int id_v;
-        vector<Edge> edges;
-
-        Vertex(int id_v)
-        {
-            this->id_v = id_v;
-            
-        }
-    };
-
     vector<Vertex> vertexes;
+
 public:
 
     ~Graph();
@@ -48,19 +50,20 @@ public:
     bool remove_vertex(int id_v);
 
     //проверка-добавление-удаление ребер
-    void add_edge(int from, int to, int weight);
-    bool remove_edge(int ftom, int to);
-    bool has_edge(int from, int to) const; 
+    void add_edge(int id_from, int id_to, int weight);
+    bool remove_edge(int id_ftom, int id_to);
+    bool has_edge(int id_from, int id_to) const;
 
     void print() const;
 
     int order() const; 
-    int degree() const; 
+    int degree() const;
+    queue<Vertex> update_queue(queue<Vertex> Q);
+
+    void relax(Vertex& u, Vertex& v);
 
 
-    
-    vector<Edge> shortest_path(const Vertex& from,
-        const Vertex& to) const;
+    vector<Edge> shortest_path(int id_from, int id_to);
     
     vector<Vertex>  walk(const Vertex& start_vertex)const;
 };

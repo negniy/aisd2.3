@@ -49,30 +49,30 @@ void Graph::add_vertex(int id_v)
 	vertexes.push_back(v);
 }
 
-bool Graph::has_edge(int from, int to) const
+bool Graph::has_edge(int id_from, int id_to) const
 {
 	if (vertexes.size() == 0) return false;
-	int index_from = find_vertex(from);
-	int index_to = find_vertex(to);
+	int index_from = find_vertex(id_from);
+	int index_to = find_vertex(id_to);
 	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
 
 	for (auto i = vertexes[index_from].edges.begin(); i != vertexes[index_from].edges.end(); i++)
 	{
-		if (i->id_to == to)
+		if (i->id_to == id_to)
 			return true;
 	}
 	return false;
 }
 
-bool Graph::remove_edge(int from, int to)
+bool Graph::remove_edge(int id_from, int id_to)
 {
 	if (vertexes.size() == 0) return false;
-	int index_from = find_vertex(from);
-	int index_to = find_vertex(to);
+	int index_from = find_vertex(id_from);
+	int index_to = find_vertex(id_to);
 	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
 
-	for (auto i = vertexes[from].edges.begin(); i != vertexes[from].edges.end(); i++) {
-		if (i->id_to == to) vertexes[from].edges.erase(i);
+	for (auto i = vertexes[id_from].edges.begin(); i != vertexes[id_from].edges.end(); i++) {
+		if (i->id_to == id_to) vertexes[id_from].edges.erase(i);
 	}
 
 	return true;
@@ -94,13 +94,12 @@ bool Graph::remove_vertex(int remove_v)
 	return true;
 }
 
-void Graph::add_edge(int from, int to, int weight)
+void Graph::add_edge(int id_from, int id_to, int weight)
 {
-	int index_from = find_vertex(from);
-	int index_to = find_vertex(to);
+	int index_from = find_vertex(id_from);
+	int index_to = find_vertex(id_to);
 	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра нет";
-
-	Edge tmp(to, weight);
+	Edge tmp(id_to, weight);
 	vertexes[index_from].edges.push_back(tmp);
 }
 
@@ -145,3 +144,47 @@ int Graph::degree() const
 	return deg;
 }
 
+vector<Edge> Graph::shortest_path(int id_from, int id_to)
+{
+	vector<Edge> path;
+	//проверка на отрицательные ребра
+	for (auto i = vertexes.begin(); i != vertexes.end(); i++)
+	{
+		for (auto j = i->edges.begin(); j != i->edges.end(); j++)
+		{
+			if (j->weight < 0) throw "Алгоритм Дейкстры не может корректно работать с отрицательными весами";
+		}
+	}
+
+	if (vertexes.size() == 0) throw "Пустой граф";
+	int index_from = find_vertex(id_from);
+	int index_to = find_vertex(id_to);
+	if (index_from == -1 || index_to == -1) throw "Одной из вершин ребра не найдено";
+
+	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
+	{
+		v->mark = 2147483646;
+		v->id_prev = 2147483646;
+	}
+	vertexes[find_vertex(id_from)].mark = 0;
+	vertexes[find_vertex(id_from)].id_prev = 0;
+
+	vector<Vertex> S; // множество обработанных вершин
+	priority_queue <Vertex, vector<Vertex>, greater<int> > Q; // приоритетная очередь обработки
+
+	while (!Q.empty())
+	{
+		//sort_queue(Q);
+		//print_queue(Q);
+		Vertex u = Q.front();
+		Q.pop();
+		S.push_back(u);
+		vector<Vertex> v_neighbour = neighbour_of_vertex(u.id_v);
+		for (auto v = v_neighbour.begin(); v != v_neighbour.end(); v++)
+		{
+			int i = find_vertex(v->id_v);
+			relax(u, vertexes[i]);
+		}
+		Q = update_queue(Q);
+	}
+}
