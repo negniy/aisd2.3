@@ -53,7 +53,7 @@ int main() {
 		try {
 			G.print();
 		}
-		catch(){
+		catch(error){
 
 		}
 		int m = get_key();
@@ -61,7 +61,7 @@ int main() {
 		switch (m)
 		{
 		case 49:
-			random_graph();
+			//random_graph();
 			get_key();
 			break;
 		case 50:

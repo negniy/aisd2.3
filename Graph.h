@@ -16,45 +16,57 @@
 using namespace std;
 
 
+struct Edge
+{
+    Edge* next;
+    int id_to;
+    double weight;
+    Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
+};
+
+enum Color
+{
+    white = 0,
+    gray = 1,
+    black = 2
+};
+
+struct  Vertex
+{
+    int id_v;
+    vector<Edge> edges;
+    double d;
+    int id_prev;
+    Color color;
+
+    Vertex(int id_v)
+    {
+        this->id_v = id_v;
+    }
+};
+
 
 class Graph
 {
 private:
-    struct Edge
-    {
-        Edge* next;
-        int id_to;
-        double weight;
-        Edge(int id_to, double weight) : id_to(id_to), weight(weight) {}
-    };
-
-    struct  Vertex
-    {
-        int id_v;
-        vector<Edge> edges;
-        double mark;
-        int id_prev;
-
-        Vertex(int id_v)
-        {
-            this->id_v = id_v;
-        }
-    };
-
-    enum Color
-    {
-        white = 0,
-        gray = 1,
-        black = 2
-    };
 
     vector<Vertex> vertexes;
 
-public:
+    // вспомогательные функции для обхода в ширину
+    void initialize();
+    vector<Vertex> search_in_width(Vertex& start_v);
 
+    // вспомогательные функции для алгоритма дейкстры
+    void initialize_for_dijkstra(int from);
+    void sort(queue<Vertex>& Q);
+    vector<Vertex> nearest_v(int id_v);
+    void deikstra(int from);
+    void relax(Vertex& u, Vertex& v);
+public:
+    //удаление графа
     ~Graph();
     void delete_graph();
-    
+
     //проверка-добавление-удаление вершин
     bool has_vertex(int id_v) const;
     int find_vertex(int id_v) const;
@@ -66,17 +78,16 @@ public:
     bool remove_edge(int id_ftom, int id_to);
     bool has_edge(int id_from, int id_to) const;
 
+    // печать графа
     void print() const;
 
-    int order() const; 
+    // порядок и степень графа
+    int order() const;
     int degree() const;
-    queue<Vertex> update_queue(queue<Vertex> Q);
 
-    void relax(Vertex& u, Vertex& v);
+    // обход в ширину
+    vector<Vertex> walk_in_width(int id_first);
 
-
-    vector<Edge> shortest_path(int id_from, int id_to);
-    
-    vector<Vertex>  walk(const Vertex& start_vertex)const;
+    //кратчайшие пути алгоритмом дейкстры
+    vector<Vertex> shortest_path(int id_from, int id_to);
 };
-
