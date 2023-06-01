@@ -75,7 +75,7 @@ public:
 
     //проверка-добавление-удаление ребер
     void add_edge(int id_from, int id_to, int weight);
-    bool remove_edge(int id_ftom, int id_to);
+    bool remove_edge(int id_from, int id_to);
     bool has_edge(int id_from, int id_to) const;
 
     // печать графа

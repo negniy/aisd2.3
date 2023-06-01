@@ -85,10 +85,11 @@ bool Graph::remove_edge(int id_from, int id_to)
 	int index_to = find_vertex(id_to);
 	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
-	for (auto i = vertexes[id_from].edges.begin(); i != vertexes[id_from].edges.end(); i++) {
-		if (i->id_to == id_to) vertexes[id_from].edges.erase(i);
+	if (vertexes[id_from].edges.size() > 1) {
+		for (auto i = vertexes[id_from].edges.begin(); i != vertexes[id_from].edges.end(); i++) {
+			if (i->id_to == id_to) vertexes[id_from].edges.erase(i);
+		}
 	}
-
 	return true;
 }
 
@@ -129,6 +130,8 @@ void Graph::print() const
 		}
 		cout << endl;
 	}
+	cout << "Порядок графа:"<< order() <<"\n";
+	cout << "Степень графа:" << degree() << "\n";
 }
 
 int Graph::order() const
@@ -161,19 +164,17 @@ int Graph::degree() const
 
 vector<Vertex> Graph::nearest_v(int id_v)
 {
-	if (vertexes.size() == 0) throw "Âåðøèí íåò";
 	int index = find_vertex(id_v);
-	if (index == -1) throw "Âåðøèíà íå íàéäåíà";
 
-	vector<Vertex> v_neighbours;
+	vector<Vertex> nearest;
 
 	for (auto i = vertexes[index].edges.begin(); i != vertexes[index].edges.end(); i++)
 	{
 		int v = find_vertex(i->id_to);
 		if (v != -1)
-			v_neighbours.push_back(vertexes[v]);
+			nearest.push_back(vertexes[v]);
 	}
-	return v_neighbours;
+	return nearest;
 }
 
 void Graph::initialize()
@@ -196,8 +197,8 @@ vector<Vertex> Graph::search_in_width(Vertex& start_v)
 		Vertex u = Q.front();
 		Q.pop();
 		way.push_back(u);
-		vector<Vertex> v_neighbours = neighbours(u.id_v);
-		for (auto v = v_neighbours.begin(); v != v_neighbours.end(); v++)
+		vector<Vertex> nearest = nearest_v(u.id_v);
+		for (auto v = nearest.begin(); v != nearest.end(); v++)
 		{
 			if (v->color == white)
 			{
@@ -233,8 +234,7 @@ void Graph::relax(Vertex& u, Vertex& v)
 
 	while (current != end)
 	{
-		if (current->id_to == v.id_v)
-			w = current->weight;
+		if (current->id_to == v.id_v) w = current->weight;
 		current++;
 	}
 	if (v.d > u.d + w)
@@ -306,7 +306,8 @@ void Graph::deikstra(int from)
 		vector<Vertex> near_v = nearest_v(u.id_v);
 		for (auto v = near_v.begin(); v != near_v.end(); v++)
 		{
-			relax(u, vertexes[find_vertex(v->id_v)]);
+			int i = find_vertex(v->id_v);
+			relax(u, vertexes[i]);
 		}
 		queue<Vertex> tmp;
 		while (!Q.empty())
@@ -314,8 +315,7 @@ void Graph::deikstra(int from)
 			Vertex u = Q.front();
 			for (auto v = vertexes.begin(); v != vertexes.end(); v++)
 			{
-				if (u.id_v == v->id_v)
-					tmp.push(vertexes[find_vertex(v->id_v)]);
+				if (u.id_v == v->id_v) tmp.push(vertexes[find_vertex(v->id_v)]);
 			}
 			Q.pop();
 		}
@@ -337,11 +337,10 @@ vector<Vertex> Graph::shortest_path(int id_from, int id_to)
 
 	while (index_to != index_from)
 	{
-
 		way.push_back(vertexes[index_to]);
 		int id_prev = vertexes[index_to].id_prev;
 		index_to = find_vertex(id_prev);
-
+		if (id_prev == INT_MAX) break;
 	}
 	way.push_back(vertexes[index_from]);
 	for (int i = 0; i < way.size() / 2; i++)
