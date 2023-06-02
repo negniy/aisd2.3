@@ -39,7 +39,7 @@ int get_key()
 };
 
 void my_graph(Graph & G) {
-	G.add_vertex(1);
+	/*G.add_vertex(1); мой граф
 	G.add_vertex(2);
 	G.add_vertex(3);
 	G.add_vertex(4);
@@ -56,8 +56,40 @@ void my_graph(Graph & G) {
 	G.add_edge(3, 2, 2);
 	G.add_edge(3, 5, 4);
 	G.add_edge(3, 6, 7);
-	G.add_edge(6, 7, 2);
+	G.add_edge(6, 7, 2);*/
+	/*G.add_vertex(6); //другой граф
+    G.add_vertex(8);
+    G.add_vertex(4);
+    G.add_vertex(3);
+    G.add_vertex(5);
+    G.add_vertex(12);
+    G.add_vertex(9);
 
+    G.add_edge(8, 6, 1);
+    G.add_edge(6, 12, 8);
+    G.add_edge(4, 8, 2);
+    G.add_edge(4, 6, 4);
+    G.add_edge(8, 12, 10);
+    G.add_edge(8, 5, 7);
+    G.add_edge(8, 3, 1);
+    G.add_edge(3, 5, 5);
+    G.add_edge(3, 9, 3);*/
+	G.add_vertex(1); // связный граф
+	G.add_vertex(2);
+	G.add_vertex(3);
+	G.add_vertex(6);
+	G.add_vertex(5);
+	G.add_vertex(4);
+
+	G.add_edge(1, 5, 3);
+	G.add_edge(1, 4, 1);
+	G.add_edge(2, 1, 9);
+	G.add_edge(4, 2, 8);
+	G.add_edge(4, 3, 5);
+	G.add_edge(3, 2, 2);
+	G.add_edge(3, 5, 4);
+	G.add_edge(5, 6, 7);
+	G.add_edge(6, 1, 2);
 }
 
 void create_graph(Graph& G) {
@@ -86,7 +118,10 @@ void create_graph(Graph& G) {
 		case 50:
 			cout << "Введите айди удаляемой вершины\n";
 			id_del = check();
-			try { G.remove_vertex(id_del); }
+			try {
+				G.remove_vertex(id_del);
+				cout << "Вершина удалена\n";
+			}
 			catch (error e) {
 				cout << "Возникла ошибка при удалении вершины\n";
 				e.print();
@@ -100,7 +135,7 @@ void create_graph(Graph& G) {
 			id_to = check();
 			cout << "Введите вес ребра\n";
 			w = check();
-			try { G.add_edge(id_from, id_to, w); }
+			try {G.add_edge(id_from, id_to, w);}
 			catch (error e) {
 				cout << "Возникла ошибка при добавлении ребра\n";
 				e.print();
@@ -112,7 +147,10 @@ void create_graph(Graph& G) {
 			id_from_del = check();
 			cout << "Введите айди вершины, в которую входит ребро\n";
 			id_to_del = check();
-			try { G.remove_edge(id_from_del, id_to_del); }
+			try {
+				G.remove_edge(id_from_del, id_to_del);
+				cout << "Ребро удалено\n";
+			}
 			catch (error e) {
 				cout << "Возникла ошибка при удалении ребра\n";
 				e.print();
@@ -134,17 +172,59 @@ void shortest_way(Graph& G) {
 	int id_to = check();
 	try { 
 		vector<Vertex> way = G.shortest_path(id_from, id_to);
-		int sum = -1;
+		cout <<"Длина пути:"<<way[way.size() - 1].d << "\n";
 		for (auto i = way.begin(); i != way.end(); i++) {
-			for (auto j = i->edges.begin(); j != i->edges.end(); j++) {
-				if (j->id_to == (i++)->id_v) sum += j->weight;
-				i--;
-			}
+			cout<< i->id_v << "(" << i->d << ")  ";
 		}
-		cout << "Кратчайший путь составляет:"<< sum <<"\n";
 	}
 	catch (error e) {
 		cout << "Возникла ошибка при поиске кратчайшего пути\n";
+		e.print();
+	}
+}
+
+void obhod(Graph& G) {
+	cout << "Введите айди вершины, от которой начинается обход\n";
+	int id_from = check();
+	cout << "Обход в ширину:\n";
+	vector<Vertex> walk = G.walk_in_width(id_from);
+	for (auto i = walk.begin(); i != walk.end(); i++) {
+		cout << i->id_v << "  ";
+	}
+}
+
+void task(Graph& G) {
+	try {
+		vector<Vertex> vertexes = G.get_vertexes();
+		if (vertexes.size() == 0) throw error("Пустой граф");
+		vector<float> average_d;
+		for (auto i = vertexes.begin(); i != vertexes.end(); i++) {
+			double sum = 0;
+			for (auto j = vertexes.begin(); j != vertexes.end(); j++) {
+				if (i->id_v != j->id_v) {
+					try {
+						vector<Vertex> way = G.shortest_path(i->id_v, j->id_v);
+						sum += way[way.size() - 1].d;
+					}
+					catch (error e) {
+						throw error("Граф не является связным");
+					}
+				}
+			}
+			average_d.push_back(sum / (vertexes.size() - 1));
+		}
+		float min = average_d[0];
+		int min_i = 0;
+		for (int i = 0; i < average_d.size(); i++) {
+			if (average_d[i] < min)
+			{
+				min = average_d[i];
+				min_i = i;
+			}
+		}
+		cout << vertexes[min_i].id_v << " - айди вершины, которую нужно превратить в склад\n";
+	}
+	catch (error e) {
 		e.print();
 	}
 }
@@ -162,7 +242,8 @@ int main() {
 		std::cout << "[1] - Использовать заданный граф\n";
 		std::cout << "[2] - Создать/изменить граф вручную\n";
 		std::cout << "[3] - Найти кратчайший маршрут\n";
-		std::cout << "[4] - Выполнить задание\n";
+		std::cout << "[4] - Обход графа\n";
+		std::cout << "[5] - Выполнить задание\n";
 		std::cout << "[ESC] - Выход\n";
 		std::cout << "Граф: \n";
 		try {
@@ -186,7 +267,11 @@ int main() {
 			get_key();
 			break;
 		case 52:
-			
+			obhod(G);
+			get_key();
+			break;
+		case 53:
+			task(G);
 			get_key();
 			break;
 		case 27:

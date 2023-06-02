@@ -67,11 +67,12 @@ public:
     ~Graph();
     void delete_graph();
 
-    //проверка-добавление-удаление вершин
+    //проверка-добавление-удаление-получение вершин
     bool has_vertex(int id_v) const;
     int find_vertex(int id_v) const;
     void add_vertex(int id_v);
     bool remove_vertex(int id_v);
+    vector<Vertex> get_vertexes() const;
 
     //проверка-добавление-удаление ребер
     void add_edge(int id_from, int id_to, int weight);

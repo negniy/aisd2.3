@@ -85,11 +85,14 @@ bool Graph::remove_edge(int id_from, int id_to)
 	int index_to = find_vertex(id_to);
 	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
-	if (vertexes[id_from].edges.size() > 1) {
-		for (auto i = vertexes[id_from].edges.begin(); i != vertexes[id_from].edges.end(); i++) {
-			if (i->id_to == id_to) vertexes[id_from].edges.erase(i);
+	for (auto i = vertexes[index_from].edges.begin(); i != vertexes[index_from].edges.end(); i++) {
+		if (i->id_to == id_to)
+		{
+			vertexes[index_from].edges.erase(i);
+			break;
 		}
 	}
+
 	return true;
 }
 
@@ -109,6 +112,11 @@ bool Graph::remove_vertex(int remove_v)
 	return true;
 }
 
+vector<Vertex> Graph::get_vertexes() const
+{
+	return vertexes;
+}
+
 void Graph::add_edge(int id_from, int id_to, int weight)
 {
 	int index_from = find_vertex(id_from);
@@ -126,7 +134,7 @@ void Graph::print() const
 		cout << i->id_v << ": ";
 		for (auto j = i->edges.begin(); j != i->edges.end(); j++)
 		{
-			cout << j->id_to << ", ";
+			cout << j->id_to <<"("<< j->weight<< ")" << "  ";
 		}
 		cout << endl;
 	}
@@ -203,14 +211,9 @@ vector<Vertex> Graph::search_in_width(Vertex& start_v)
 			if (v->color == white)
 			{
 				int id = find_vertex(v->id_v);
-				if (id != 0)
-				{
-					vertexes[id].color = gray;
-					vertexes[id].id_prev = u.id_v;
-				}
+				vertexes[id].color = gray;
+				vertexes[id].id_prev = u.id_v;
 				Q.push(vertexes[id]);
-
-
 			}
 		}
 		vertexes[find_vertex(u.id_v)].color = black;
@@ -251,45 +254,50 @@ void Graph::initialize_for_dijkstra(int from)
 		i->d = INT_MAX;
 		i->id_prev = INT_MAX;
 	}
-	this->vertexes[from].d = 0;
+	int index = find_vertex(from);
+	this->vertexes[index].d = 0;
 }
 
 void Graph::sort(queue<Vertex>& Q)
 {
-	for (int i = 1; i <= Q.size(); i++)
+	int min_i = -1; // индекс минимального элемента в очереди
+	double min_val = INT_MAX;
+	for (int j = 0; j < Q.size(); j++)
 	{
-		int min_i = -1; // индекс минимального элемента в очереди
-		double min_val = INT_MAX;
-		for (int j = 0; j < Q.size(); j++)
+		Vertex cur = Q.front();
+		Q.pop();
+		if (cur.d <= min_val)
 		{
-			Vertex cur = Q.front();
-			Q.pop();
-			if (cur.d <= min_val && j <= Q.size()-i)
-			{
-				min_i = j;
-				min_val = cur.d;
-			}
-			Q.push(cur);
+			min_i = j;
+			min_val = cur.d;
 		}
-		// вставка последнего в конец очереди
-		Vertex min_v (INT_MAX);
-		for (int j = 0; j < Q.size(); j++)
-		{
-			Vertex a = Q.front();
-			Q.pop();
-			if (j != min_i)
-				Q.push(a);
-			else
-				min_v = a;
-		}
-		Q.push(min_v); 
+		Q.push(cur);
+	}
+	// вставка последнего в конец очереди
+	Vertex min_v(INT_MAX);
+	for (int j = 0; j < Q.size(); j++)
+	{
+		Vertex a = Q.front();
+		Q.pop();
+		if (j != min_i)
+			Q.push(a);
+		else
+			min_v = a;
+	}
+	Q.push(min_v);
+	//остальные пихаем в конец 
+	for (int i = 1; i < Q.size(); i++)
+	{
+		Vertex cur = Q.front();
+		Q.pop();
+		Q.push(cur);
 	}
 }
 
 void Graph::deikstra(int from)
 {
 	initialize_for_dijkstra(from);
-	vector<Vertex> S;
+	//vector<Vertex> S;
 	queue<Vertex> Q;
 
 	for (auto v = vertexes.begin(); v != vertexes.end(); v++)
@@ -300,14 +308,22 @@ void Graph::deikstra(int from)
 	while (!Q.empty())
 	{
 		sort(Q);
+		/*cout << "queue: ";
+		while (!Q.empty())
+		{
+			cout << Q.front().id_v << "\t";
+			Q.pop();
+		}
+		cout << endl;*/
 		Vertex u = Q.front();
 		Q.pop();
-		S.push_back(u);
+		//S.push_back(u);
 		vector<Vertex> near_v = nearest_v(u.id_v);
 		for (auto v = near_v.begin(); v != near_v.end(); v++)
 		{
 			int i = find_vertex(v->id_v);
-			relax(u, vertexes[i]);
+			int k = find_vertex(u.id_v);
+			relax(vertexes[k], vertexes[i]);
 		}
 		queue<Vertex> tmp;
 		while (!Q.empty())
@@ -332,7 +348,7 @@ vector<Vertex> Graph::shortest_path(int id_from, int id_to)
 	if (index_from == -1 || index_to == -1) throw error("Одной из вершин ребра не найдено");
 
 	deikstra(vertexes[index_from].id_v);
-
+	vertexes;
 	vector<Vertex> way;
 
 	while (index_to != index_from)
@@ -340,7 +356,7 @@ vector<Vertex> Graph::shortest_path(int id_from, int id_to)
 		way.push_back(vertexes[index_to]);
 		int id_prev = vertexes[index_to].id_prev;
 		index_to = find_vertex(id_prev);
-		if (id_prev == INT_MAX) break;
+		if (index_to == -1) throw error("Пути не существует");
 	}
 	way.push_back(vertexes[index_from]);
 	for (int i = 0; i < way.size() / 2; i++)
